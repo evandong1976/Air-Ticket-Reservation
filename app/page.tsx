@@ -1,7 +1,7 @@
 "use client";
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/navbar';
+import Home from './home/page';
 
 export type airlineTicket = {
   airline_name: string;
@@ -12,7 +12,7 @@ export type airlineTicket = {
   base_price: number;
 }
 
-export default function Home() {
+export default function Main() {
 
   const [signedIn, setSignedIn] = useState<boolean>(false);
   
@@ -24,26 +24,12 @@ export default function Home() {
   useEffect(() =>{
     getUser();
     if (signedIn) {
-
+      
     }
   });
 
 
-  if (signedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <h1 className="text-black text-4xl font-bold mb-6">Welcome to My App</h1>
-        <div className="space-x-4">
-            <Link href="./login" className="text-blue-600 hover:text-blue-800 text-lg">
-                Go to Login
-            </Link>
-            <Link href="./signup" className="text-blue-600 hover:text-blue-800 text-lg">
-                Go to Sign Up
-            </Link>
-        </div>
-      </div>
-    )
-  }
+  if (!signedIn) return <Home/>;
 
   return (
     <>
