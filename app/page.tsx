@@ -14,8 +14,6 @@ export type airlineTicket = {
 
 export default function Main() {
 
-  const [signedIn, setSignedIn] = useState<boolean>(false);
-  
   const getUser = () => {
     
   }
@@ -23,13 +21,10 @@ export default function Main() {
   // gets the flights of that user
   useEffect(() =>{
     getUser();
-    if (signedIn) {
-      
-    }
   });
 
 
-  if (!signedIn) return <Home/>;
+  if (true) return <Home/>;
 
   return (
     <>

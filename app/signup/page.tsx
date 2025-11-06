@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 
 function SignUpForm() {
-  const [formData, setFormData] = useState({
+  const [role, setRole] = useState<"User" | "Staff">("User");
+
+  const [userFormData, setUserFormData] = useState({
     username: "",
     email: "",
     password: "",
@@ -11,7 +13,7 @@ function SignUpForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
+    setUserFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -19,13 +21,43 @@ function SignUpForm() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form Submitted!", formData);
-    setFormData({ username: "", email: "", password: "" });
+    console.log("Form Submitted!", userFormData);
+    setUserFormData({ username: "", email: "", password: "" });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white p-10 rounded-lg shadow-xl w-full max-w-md">
+      <div className="flex flex-col bg-white p-10 rounded-lg shadow-xl w-full max-w-md">
+        <div className="inline-flex justify-center mb-4 cursor-pointer">
+          { /* Staff / User */}
+          <button
+            className={`hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 rounded-l cursor-pointer
+              ${
+                role == "Staff"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-300 text-gray-800"
+              }`}
+            onClick={() => {
+              setRole("Staff");
+            }}
+          >
+            Staff
+          </button>
+          <button
+            className={` hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 rounded-r cursor-pointer 
+              ${
+                role == "User"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-300 text-gray-800"
+              }`}
+            onClick={() => {
+              setRole("User");
+            }}
+          >
+            User
+          </button>
+        </div>
+
         {/* Heading */}
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
           Create Your Account
@@ -44,26 +76,7 @@ function SignUpForm() {
               type="text"
               id="username"
               name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Email Group */}
-          <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              value={userFormData.username}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -82,7 +95,7 @@ function SignUpForm() {
               type="password"
               id="password"
               name="password"
-              value={formData.password}
+              value={userFormData.password}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
