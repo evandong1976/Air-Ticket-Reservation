@@ -1,12 +1,12 @@
-import { airlineTicket } from "@/app/page";
+import { flight } from "@/app/page";
 
-export default function TicketCard( {
+export default function TicketCard({
   airline_name,
   flight_number,
   flight_departure_date, 
   flight_arrival_date,
   status,
-  base_price} : airlineTicket){
+  base_price} : flight){
   
   return (
     <div className="flex max-w-full max-h-full bg-amber-700">

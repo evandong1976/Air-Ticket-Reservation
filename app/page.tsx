@@ -1,49 +1,81 @@
 "use client";
-import { useEffect, useState } from 'react';
-import Navbar from '@/components/navbar';
-import Home from './home/page';
+import { useState } from "react";
+import Navbar from "@/components/navbar";
 
-export type airlineTicket = {
+export type flight = {
   airline_name: string;
   flight_number: string;
   flight_departure_date: Date;
   flight_arrival_date: Date;
   status: string;
   base_price: number;
-}
+  departure: string;
+  arrival: string;
+};
 
 export default function Main() {
-
-  const getUser = () => {
-    
-  }
-
-  // gets the flights of that user
-  useEffect(() =>{
-    getUser();
+  const [flights, setFlights] = useState<flight[]>([]);
+  const [query, setQuery] = useState({
+    airline: "",
+    departure: "",
+    arrival: "",
+    date: "",
   });
 
-
-  if (true) return <Home/>;
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+  };
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen min-w-screen border-2 p-10 px-46">
-        <div className="flex flex-col text-5xl text-white min-w-full border-2 border-amber-50">
-          <a>
-            yeah
-          </a>
-          <a>
-            yeah
-          </a>
-          <a>
-            yeah
-          </a>
-          <a>
-            yeah
-          </a>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-blue-300 p-8">
+        <h1 className="text-5xl font-bold text-blue-900 mb-8 text-center">
+          Search for Future Flights
+        </h1>
+
+        <form
+          onSubmit={handleSearch}
+          className="bg-white rounded-2xl shadow-xl p-8 flex flex-col md:flex-row gap-4 w-full max-w-4xl"
+        >
+          <input
+            type="text"
+            placeholder="Airline"
+            value={query.airline}
+            onChange={(e) => setQuery({ ...query, airline: e.target.value })}
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input
+            type="text"
+            placeholder="Departure"
+            value={query.departure}
+            onChange={(e) => setQuery({ ...query, departure: e.target.value })}
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input
+            type="text"
+            placeholder="Arrival"
+            value={query.arrival}
+            onChange={(e) => setQuery({ ...query, arrival: e.target.value })}
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input
+            type="date"
+            value={query.date}
+            onChange={(e) => setQuery({ ...query, date: e.target.value })}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+          >
+            Search
+          </button>
+        </form>
+
+        {/* Display the flights */}
+        
       </div>
     </>
   );
