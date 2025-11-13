@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from 'next/navigation'
 import { supabase } from "@/lib/supabaseClient";
 
 function LoginForm() {
+  const router = useRouter();
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("");
@@ -27,10 +29,10 @@ function LoginForm() {
         {/* Staff / User */}
         <div className="inline-flex justify-center mb-4 cursor-pointer">
           <button
-            className={`hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 rounded-l cursor-pointer
+            className={`hover:bg-green-300 text-gray-800 font-bold py-2 px-4 rounded-l cursor-pointer
               ${
                 role == "Staff"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-green-500 text-white"
                   : "bg-gray-300 text-gray-800"
               }`}
             onClick={() => {
@@ -42,10 +44,10 @@ function LoginForm() {
             Staff
           </button>
           <button
-            className={` hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 rounded-r cursor-pointer 
+            className={` hover:bg-green-300 text-gray-800 font-bold py-2 px-4 cursor-pointer 
               ${
                 role == "User"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-green-500 text-white"
                   : "bg-gray-300 text-gray-800"
               }`}
             onClick={() => {
@@ -54,6 +56,14 @@ function LoginForm() {
             }}
           >
             User
+          </button>
+          <button
+            className="hover:bg-green-300 bg-gray-300 text-gray-800 rounder-r font-bold py-2 px-4 rounded-r cursor-pointer"
+            onClick={() => {
+              router.push("/");
+            }}
+          >
+            Home
           </button>
         </div>
 
@@ -79,7 +89,7 @@ function LoginForm() {
                 setEmail(e.target.value);
               }}
               required
-              className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -97,7 +107,7 @@ function LoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -114,7 +124,7 @@ function LoginForm() {
               id="password"
               onChange={() => {}}
               required
-              className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 

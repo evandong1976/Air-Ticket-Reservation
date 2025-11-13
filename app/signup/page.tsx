@@ -1,35 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function SignUpForm() {
+  const router = useRouter();
+
   const [role, setRole] = useState<"User" | "Staff">("User");
 
-  const [userFormData, setUserFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form Submitted!", userFormData);
-    setUserFormData({ username: "", email: "", password: "" });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="flex flex-col bg-white p-10 rounded-lg shadow-xl w-full max-w-md">
         <div className="inline-flex justify-center mb-4 cursor-pointer">
-          { /* Staff / User */}
+          {/* Staff / User */}
           <button
             className={`hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 rounded-l cursor-pointer
               ${
@@ -44,7 +35,7 @@ function SignUpForm() {
             Staff
           </button>
           <button
-            className={` hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 rounded-r cursor-pointer 
+            className={` hover:bg-blue-300 text-gray-800 font-bold py-2 px-4 cursor-pointer 
               ${
                 role == "User"
                   ? "bg-blue-500 text-white"
@@ -56,6 +47,14 @@ function SignUpForm() {
           >
             User
           </button>
+          <button
+            className="hover:bg-blue-300 bg-gray-300 text-gray-800 rounder-r font-bold py-2 px-4 rounded-r cursor-pointer"
+            onClick={() => {
+              router.push("/");
+            }}
+          >
+            Home
+          </button>
         </div>
 
         {/* Heading */}
@@ -65,7 +64,7 @@ function SignUpForm() {
 
         <form className="space-y-6 text-black" onSubmit={handleSubmit}>
           {/* Username Group */}
-          <div className="space-y-2">
+          <div className={`space-y-2 ${role == "Staff" ? "" : "hidden"}`}>
             <label
               htmlFor="username"
               className="block text-sm font-medium text-gray-700"
@@ -76,10 +75,32 @@ function SignUpForm() {
               type="text"
               id="username"
               name="username"
-              value={userFormData.username}
-              onChange={handleChange}
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+              }}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Email Group */}
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+              required
+              className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -95,8 +116,10 @@ function SignUpForm() {
               type="password"
               id="password"
               name="password"
-              value={userFormData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
