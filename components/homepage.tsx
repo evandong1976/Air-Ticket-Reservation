@@ -1,7 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/navbar";
 import { flight } from "@/app/page";
+import { supabase } from "@/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
+
 
 export default function HomePage() {
   const [flights, setFlights] = useState<flight[]>([]);
@@ -11,14 +14,26 @@ export default function HomePage() {
     arrival: "",
     date: "",
   });
+  const [user, setUser] = useState<User | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
   };
 
+  // gets the user
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+      }
+    };
+    checkSession();
+  }, []);
+
   return (
     <>
-      <Navbar />
+      <Navbar user={user} />
       <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-blue-100 to-blue-300 p-8">
         <h1 className="text-5xl font-bold text-blue-900 mb-8 text-center">
           Search for Future Flights

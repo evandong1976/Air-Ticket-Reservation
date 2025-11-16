@@ -2,18 +2,75 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 function SignUpForm() {
   const router = useRouter();
 
   const [role, setRole] = useState<"User" | "Staff">("User");
+  const [error, setError] = useState('');
 
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const { data, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    // if there was an error
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+    
+    // update the customer table if the auth was allowed
+    if (data.user) {
+      const { data, error: insertError} = await supabase
+        .from("customer")
+        // PASSWORD IS NOT HASHED
+        .insert({ email: email, password: password });
+    }
+
+    router.push("/");
+  };
+
+
+  const handleStaffSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const { data, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    // if there was an error
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
+    // update the staff table if the auth was allowed
+    if (data.user) {
+      const { error: insertError } = await supabase
+        .from("airline_staff")
+        .insert({
+          username: username,
+          email_address: email,
+          password: password,
+        });
+
+      if (insertError) {
+        setError(insertError.message);
+        return;
+      }
+    }
+
+    console.log(error);
   };
 
   return (
@@ -30,6 +87,9 @@ function SignUpForm() {
               }`}
             onClick={() => {
               setRole("Staff");
+              setEmail("");
+              setPassword("");
+              setUsername("");
             }}
           >
             Staff
@@ -43,6 +103,9 @@ function SignUpForm() {
               }`}
             onClick={() => {
               setRole("User");
+              setEmail("");
+              setPassword("");
+              setUsername("");
             }}
           >
             User
@@ -62,7 +125,13 @@ function SignUpForm() {
           Create Your Account
         </h2>
 
-        <form className="space-y-6 text-black" onSubmit={handleSubmit}>
+        <form className="space-y-6 text-black" onSubmit={(e) => {
+          e.preventDefault();
+          return role === "Staff"
+            ? handleStaffSubmit(e)
+            : handleCustomerSubmit(e);
+        }}>
+
           {/* Username Group */}
           <div className={`space-y-2 ${role == "Staff" ? "" : "hidden"}`}>
             <label
@@ -78,8 +147,9 @@ function SignUpForm() {
               value={username}
               onChange={(e) => {
                 setUsername(e.target.value);
+                setError("");
               }}
-              required
+              required={role == "Staff"}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -98,6 +168,7 @@ function SignUpForm() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
+                setError("");
               }}
               required
               className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -119,6 +190,7 @@ function SignUpForm() {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
+                setError("");
               }}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -132,6 +204,10 @@ function SignUpForm() {
           >
             Sign Up
           </button>
+
+          {error && (
+            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+          )}
 
           {/* Login Link */}
           <p className="text-center text-sm text-gray-600 pt-2">
