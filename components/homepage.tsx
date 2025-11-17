@@ -1,10 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
 import Navbar from "@/components/navbar";
-import { flight } from "@/app/page";
 import { supabase } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
+import FlightCard from "@/components/FlightCard";
 
+export type flight = {
+  flight_number: number;
+  base_price: number;
+  departure_date_time: string;
+  arrival_date_time: string;
+  airplane_id: number;
+  arrival_airport_code: string;
+  status: string;
+  departure_airport_code: string;
+  airline_name: string;
+};
 
 export default function HomePage() {
   const [flights, setFlights] = useState<flight[]>([]);
@@ -18,12 +29,41 @@ export default function HomePage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    const { data, error } = await supabase
+      .from("flight")
+      .select("*")
+      .ilike("airline_name", query.airline ? `%${query.airline}%` : "%*")
+      .ilike(
+        "departure_airport_code",
+        query.departure ? `%${query.departure}%` : "%*"
+      )
+      .ilike(
+        "arrival_airport_code",
+        query.arrival ? `%${query.arrival}%` : "%*"
+      )
+      .gte(
+        "departure_date_time",
+        query.date ? `${query.date}T00:00:00Z` : "1970-01-01T00:00:00Z"
+      )
+      .lte(
+        "departure_date_time",
+        query.date ? `${query.date}T23:59:59Z` : "2100-01-01T00:00:00Z"
+      )
+      .order("departure_date_time", { ascending: true });
+
+    if (error) {
+      console.error("Error searching flights:", error);
+    } else {
+      setFlights(data);
+    }
   };
 
   // gets the user
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         setUser(session.user);
       }
@@ -31,10 +71,28 @@ export default function HomePage() {
     checkSession();
   }, []);
 
+  // finds all the flights
+  useEffect(() => {
+    const fetchFlights = async () => {
+      const { data, error } = await supabase
+        .from("flight")
+        .select("*")
+        .order("departure_date_time", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching flights:", error);
+      } else {
+        setFlights(data);
+      }
+    };
+
+    fetchFlights();
+  }, []);
+
   return (
     <>
       <Navbar user={user} />
-      <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-blue-100 to-blue-300 p-8">
+      <div className="pt-52 flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-blue-100 to-blue-300 p-8">
         <h1 className="text-5xl font-bold text-blue-900 mb-8 text-center">
           Search for Future Flights
         </h1>
@@ -79,6 +137,11 @@ export default function HomePage() {
         </form>
 
         {/* Display the flights */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {flights.map((flightObj) => (
+            <FlightCard key={flightObj.flight_number} f={flightObj} />
+          ))}
+        </div>
       </div>
     </>
   );
