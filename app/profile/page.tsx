@@ -18,19 +18,36 @@ interface CustomerProfile {
   date_of_birth: string | null;
 }
 
+interface AirlineStaffProfile {
+  username: string;
+  password: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
+  email_address: string | null;
+  airline_name: string | null;
+}
+
+type Profile =
+  | ({ role: "customer" } & CustomerProfile)
+  | ({ role: "staff" } & AirlineStaffProfile);
+
 export default function ProfilePage() {
-  const [customer, setCustomer] = useState<CustomerProfile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Load customer data
+  // ------------------------------
+  // LOAD PROFILE (for both roles)
+  // ------------------------------
   useEffect(() => {
     const loadProfile = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (!session?.user?.email) {
         setError("Not signed in");
         setLoading(false);
@@ -39,70 +56,118 @@ export default function ProfilePage() {
 
       const email = session.user.email;
 
-      const { data, error } = await supabase
+      // 1️⃣ Try CUSTOMER table
+      const { data: cust } = await supabase
         .from("customer")
         .select("*")
         .eq("email", email)
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        setError(error.message);
+      if (cust) {
+        setProfile({ role: "customer", ...cust });
         setLoading(false);
         return;
       }
 
-      setCustomer(data);
+      // 2️⃣ Try AIRLINE STAFF table
+      const { data: staff } = await supabase
+        .from("airline_staff")
+        .select("*")
+        .eq("email_address", email)
+        .maybeSingle();
+
+      if (staff) {
+        setProfile({ role: "staff", ...staff });
+        setLoading(false);
+        return;
+      }
+
+      // 3️⃣ Not found
+      setError("Profile not found.");
       setLoading(false);
     };
 
     loadProfile();
   }, []);
 
-  const handleSave = async () => {
-    if (!customer) return;
+  // ------------------------------
+  // GENERIC FIELD UPDATER
+  // ------------------------------
+  const updateField = (
+    field: keyof CustomerProfile | keyof AirlineStaffProfile,
+    value: string | null
+  ) => {
+    if (!profile) return;
+    setProfile({ ...profile, [field]: value });
+  };
 
-    setSaving(true);
+  // ------------------------------
+  // SAVE PROFILE (handles both roles)
+  // ------------------------------
+  const handleSave = async () => {
+    if (!profile) return;
+
     setError("");
     setSuccess("");
+    setSaving(true);
 
-    const { error } = await supabase
-      .from("customer")
-      .update({
-        name: customer.name,
-        building_number: customer.building_number,
-        street: customer.street,
-        city: customer.city,
-        state: customer.state,
-        phone_number: customer.phone_number,
-        passport_number: customer.passport_number,
-        passport_expiration: customer.passport_expiration,
-        passport_country: customer.passport_country,
-        date_of_birth: customer.date_of_birth,
-      })
-      .eq("email", customer.email);
+    if (profile.role === "customer") {
+      const { error } = await supabase
+        .from("customer")
+        .update({
+          name: profile.name,
+          building_number: profile.building_number,
+          street: profile.street,
+          city: profile.city,
+          state: profile.state,
+          phone_number: profile.phone_number,
+          passport_number: profile.passport_number,
+          passport_expiration: profile.passport_expiration,
+          passport_country: profile.passport_country,
+          date_of_birth: profile.date_of_birth,
+        })
+        .eq("email", profile.email);
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("Profile updated successfully.");
+      if (error) setError(error.message);
+      else setSuccess("Profile updated successfully.");
+    }
+
+    if (profile.role === "staff") {
+      const { error } = await supabase
+        .from("airline_staff")
+        .update({
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email_address: profile.email_address,
+          airline_name: profile.airline_name,
+          date_of_birth: profile.date_of_birth,
+        })
+        .eq("username", profile.username);
+
+      if (error) setError(error.message);
+      else setSuccess("Staff profile updated successfully.");
     }
 
     setSaving(false);
   };
 
-  const updateField = (field: keyof CustomerProfile, value: string | null) => {
-    if (!customer) return;
-    setCustomer({ ...customer, [field]: value });
+  // ------------------------------
+  // SIGN OUT
+  // ------------------------------
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
   };
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-  }
-
+  // ------------------------------
+  // UI STATES
+  // ------------------------------
   if (loading) return <div className="p-6">Loading profile...</div>;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!customer) return <div className="p-6">No profile found.</div>;
+  if (!profile) return <div className="p-6">No profile found.</div>;
 
+  // ------------------------------
+  // RENDERING
+  // ------------------------------
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
@@ -112,139 +177,191 @@ export default function ProfilePage() {
           </h1>
 
           {success && (
-            <p className="text-green-600 font-medium mb-4 bg-green-50 p-3 rounded-lg border border-green-200">
+            <p className="text-green-600 mb-4 bg-green-50 p-3 rounded-lg border border-green-200">
               {success}
             </p>
           )}
           {error && (
-            <p className="text-red-600 font-medium mb-4 bg-red-50 p-3 rounded-lg border border-red-200">
+            <p className="text-red-600 mb-4 bg-red-50 p-3 rounded-lg border border-red-200">
               {error}
             </p>
           )}
 
-          {/* ---------- Profile Fields ---------- */}
           <div className="space-y-6">
+            {/* ---------------- ACCOUNT SECTION ---------------- */}
             <Section title="Account">
-              <Field label="Email">
+              <Field label={profile.role === "customer" ? "Email" : "Username"}>
                 <input
                   type="text"
-                  value={customer.email}
+                  value={
+                    profile.role === "customer"
+                      ? profile.email
+                      : profile.username
+                  }
                   disabled
                   className="w-full border p-3 rounded-lg bg-gray-100 text-gray-600"
                 />
               </Field>
 
-              <Field label="Name">
-                <input
-                  type="text"
-                  value={customer.name || ""}
-                  onChange={(e) => updateField("name", e.target.value || null)}
-                  className="input"
-                />
-              </Field>
+              {profile.role === "customer" && (
+                <Field label="Name">
+                  <input
+                    type="text"
+                    value={profile.name || ""}
+                    onChange={(e) =>
+                      updateField("name", e.target.value || null)
+                    }
+                    className="input"
+                  />
+                </Field>
+              )}
+
+              {profile.role === "staff" && (
+                <>
+                  <Field label="First Name">
+                    <input
+                      type="text"
+                      value={profile.first_name || ""}
+                      onChange={(e) =>
+                        updateField("first_name", e.target.value || null)
+                      }
+                      className="input"
+                    />
+                  </Field>
+
+                  <Field label="Last Name">
+                    <input
+                      type="text"
+                      value={profile.last_name || ""}
+                      onChange={(e) =>
+                        updateField("last_name", e.target.value || null)
+                      }
+                      className="input"
+                    />
+                  </Field>
+                </>
+              )}
             </Section>
 
-            <Section title="Address">
-              <Field label="Building Number">
-                <input
-                  type="text"
-                  value={customer.building_number || ""}
-                  onChange={(e) =>
-                    updateField("building_number", e.target.value || null)
-                  }
-                  className="input"
-                />
-              </Field>
+            {/* ---------------- ADDRESS (customers only) ---------------- */}
+            {profile.role === "customer" && (
+              <>
+                <Section title="Address">
+                  <Field label="Building Number">
+                    <input
+                      className="input"
+                      value={profile.building_number || ""}
+                      onChange={(e) =>
+                        updateField("building_number", e.target.value || null)
+                      }
+                    />
+                  </Field>
 
-              <Field label="Street">
-                <input
-                  type="text"
-                  value={customer.street || ""}
-                  onChange={(e) =>
-                    updateField("street", e.target.value || null)
-                  }
-                  className="input"
-                />
-              </Field>
+                  <Field label="Street">
+                    <input
+                      className="input"
+                      value={profile.street || ""}
+                      onChange={(e) =>
+                        updateField("street", e.target.value || null)
+                      }
+                    />
+                  </Field>
 
-              <Field label="City">
-                <input
-                  type="text"
-                  value={customer.city || ""}
-                  onChange={(e) => updateField("city", e.target.value || null)}
-                  className="input"
-                />
-              </Field>
+                  <Field label="City">
+                    <input
+                      className="input"
+                      value={profile.city || ""}
+                      onChange={(e) =>
+                        updateField("city", e.target.value || null)
+                      }
+                    />
+                  </Field>
 
-              <Field label="State">
-                <input
-                  type="text"
-                  value={customer.state || ""}
-                  onChange={(e) => updateField("state", e.target.value || null)}
-                  className="input"
-                />
-              </Field>
-            </Section>
+                  <Field label="State">
+                    <input
+                      className="input"
+                      value={profile.state || ""}
+                      onChange={(e) =>
+                        updateField("state", e.target.value || null)
+                      }
+                    />
+                  </Field>
+                </Section>
 
-            <Section title="Contact">
-              <Field label="Phone Number">
-                <input
-                  type="text"
-                  value={customer.phone_number || ""}
-                  onChange={(e) =>
-                    updateField("phone_number", e.target.value || null)
-                  }
-                  className="input"
-                />
-              </Field>
-            </Section>
+                <Section title="Contact">
+                  <Field label="Phone Number">
+                    <input
+                      className="input"
+                      value={profile.phone_number || ""}
+                      onChange={(e) =>
+                        updateField("phone_number", e.target.value || null)
+                      }
+                    />
+                  </Field>
+                </Section>
 
-            <Section title="Passport Info">
-              <Field label="Passport Number">
-                <input
-                  type="text"
-                  value={customer.passport_number || ""}
-                  onChange={(e) =>
-                    updateField("passport_number", e.target.value || null)
-                  }
-                  className="input"
-                />
-              </Field>
+                <Section title="Passport Info">
+                  <Field label="Passport Number">
+                    <input
+                      className="input"
+                      value={profile.passport_number || ""}
+                      onChange={(e) =>
+                        updateField("passport_number", e.target.value || null)
+                      }
+                    />
+                  </Field>
 
-              <Field label="Passport Expiration">
-                <input
-                  type="date"
-                  value={customer.passport_expiration || ""}
-                  onChange={(e) =>
-                    updateField("passport_expiration", e.target.value || null)
-                  }
-                  className="input"
-                />
-              </Field>
+                  <Field label="Passport Expiration">
+                    <input
+                      type="date"
+                      className="input"
+                      value={profile.passport_expiration || ""}
+                      onChange={(e) =>
+                        updateField(
+                          "passport_expiration",
+                          e.target.value || null
+                        )
+                      }
+                    />
+                  </Field>
 
-              <Field label="Passport Country">
-                <input
-                  type="text"
-                  value={customer.passport_country || ""}
-                  onChange={(e) =>
-                    updateField("passport_country", e.target.value || null)
-                  }
-                  className="input"
-                />
-              </Field>
-            </Section>
+                  <Field label="Passport Country">
+                    <input
+                      className="input"
+                      value={profile.passport_country || ""}
+                      onChange={(e) =>
+                        updateField("passport_country", e.target.value || null)
+                      }
+                    />
+                  </Field>
+                </Section>
+              </>
+            )}
 
+            {/* ---------------- PERSONAL (both roles) ---------------- */}
             <Section title="Personal">
               <Field label="Date of Birth">
                 <input
                   type="date"
-                  value={customer.date_of_birth || ""}
+                  className="input"
+                  value={profile.date_of_birth || ""}
                   onChange={(e) =>
                     updateField("date_of_birth", e.target.value || null)
                   }
-                  className="input"
                 />
               </Field>
+
+              {profile.role === "staff" && (
+                <Field label="Airline Name">
+                  <input
+                    className="input"
+                    value={profile.airline_name || ""}
+                    onChange={(e) =>
+                      updateField("airline_name", e.target.value || null)
+                    }
+                  />
+                </Field>
+              )}
             </Section>
           </div>
 
@@ -299,4 +416,3 @@ function Field({
     </div>
   );
 }
-

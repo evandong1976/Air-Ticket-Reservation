@@ -3,11 +3,26 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { flight } from "@/components/homepage";
+import Link from "next/link";
 
 export default function FlightsPage() {
   const [flights, setFlights] = useState<flight[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
+
+  // Format: "May 26, 2025, 5:30 PM"
+  const formatDate = (iso: string) => {
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return iso; // fallback if invalid
+    return date.toLocaleString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -44,7 +59,6 @@ export default function FlightsPage() {
 
       <div className="overflow-x-auto rounded-xl shadow-lg border border-gray-200 bg-white">
         <table className="min-w-full text-sm">
-          {/* Header */}
           <thead className="bg-gray-100 sticky top-0 text-gray-700 font-semibold">
             <tr>
               <th className="px-4 py-3 border-b">Flight #</th>
@@ -56,7 +70,7 @@ export default function FlightsPage() {
               <th className="px-4 py-3 border-b">Arrive Airport</th>
               <th className="px-4 py-3 border-b">Depart Time</th>
               <th className="px-4 py-3 border-b">Arrive Time</th>
-              <th className="px-4 py-3 border-b">Save</th>
+              <th className="px-4 py-3 border-b"><Link href="/">Home</Link></th>
             </tr>
           </thead>
 
@@ -64,14 +78,14 @@ export default function FlightsPage() {
             {flights.map((f, idx) => (
               <tr
                 key={f.flight_number}
-                className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                className={`text-black ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
               >
                 <td className="px-4 py-3 border-b">{f.flight_number}</td>
 
-                {/* Inputs */}
+                {/* Airline name */}
                 <td className="px-4 py-3 border-b">
                   <input
-                    className="border rounded-lg px-2 py-1 w-full focus:ring-2 focus:ring-blue-400 outline-none"
+                    className="border text-black rounded-lg px-2 py-1 w-full"
                     value={f.airline_name}
                     onChange={(e) =>
                       handleChange(
@@ -83,10 +97,11 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Airplane ID */}
                 <td className="px-4 py-3 border-b">
                   <input
                     type="number"
-                    className="border rounded-lg px-2 py-1 w-full"
+                    className="border text-black rounded-lg px-2 py-1 w-full"
                     value={f.airplane_id}
                     onChange={(e) =>
                       handleChange(
@@ -98,10 +113,11 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Base price */}
                 <td className="px-4 py-3 border-b">
                   <input
                     type="number"
-                    className="border rounded-lg px-2 py-1 w-full"
+                    className="border text-black rounded-lg px-2 py-1 w-full"
                     value={f.base_price}
                     onChange={(e) =>
                       handleChange(
@@ -113,9 +129,10 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Status */}
                 <td className="px-4 py-3 border-b">
                   <input
-                    className="border rounded-lg px-2 py-1 w-full"
+                    className="border text-black rounded-lg px-2 py-1 w-full"
                     value={f.status}
                     onChange={(e) =>
                       handleChange(f.flight_number, "status", e.target.value)
@@ -123,9 +140,10 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Depart airport */}
                 <td className="px-4 py-3 border-b">
                   <input
-                    className="border rounded-lg px-2 py-1 w-full"
+                    className="border text-black rounded-lg px-2 py-1 w-full"
                     value={f.departure_airport_code}
                     onChange={(e) =>
                       handleChange(
@@ -137,9 +155,10 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Arrive airport */}
                 <td className="px-4 py-3 border-b">
                   <input
-                    className="border rounded-lg px-2 py-1 w-full"
+                    className="border text-black rounded-lg px-2 py-1 w-full"
                     value={f.arrival_airport_code}
                     onChange={(e) =>
                       handleChange(
@@ -151,7 +170,11 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Formatted + editable departure time */}
                 <td className="px-4 py-3 border-b">
+                  <div className="text-gray-500 text-xs mb-1">
+                    {formatDate(f.departure_date_time)}
+                  </div>
                   <input
                     type="datetime-local"
                     className="border rounded-lg px-2 py-1 w-full"
@@ -166,7 +189,11 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Formatted + editable arrival time */}
                 <td className="px-4 py-3 border-b">
+                  <div className="text-gray-500 text-xs mb-1">
+                    {formatDate(f.arrival_date_time)}
+                  </div>
                   <input
                     type="datetime-local"
                     className="border rounded-lg px-2 py-1 w-full"
@@ -181,6 +208,7 @@ export default function FlightsPage() {
                   />
                 </td>
 
+                {/* Save button */}
                 <td className="px-4 py-3 border-b text-center">
                   <button
                     disabled={saving}
