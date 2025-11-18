@@ -20,6 +20,11 @@ function SignUpForm() {
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          role: "User",
+        }
+      }
     });
 
     // if there was an error
@@ -46,6 +51,11 @@ function SignUpForm() {
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          role: "Staff",
+        }
+      }
     });
 
     // if there was an error
@@ -70,7 +80,7 @@ function SignUpForm() {
       }
     }
 
-    console.log(error);
+    router.push("/")
   };
 
   return (

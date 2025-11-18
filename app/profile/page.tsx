@@ -258,9 +258,9 @@ export default function ProfilePage() {
           </button>
 
           <Link
-            href = "/"
+            className="block text-center mt-4 cursor-pointer w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition"
+            href="/"
             onClick={handleSignOut}
-            className="cursor-pointer mt-3 w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition"
           >
             Sign Out
           </Link>

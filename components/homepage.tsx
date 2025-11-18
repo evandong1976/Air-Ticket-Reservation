@@ -19,13 +19,13 @@ export type flight = {
 
 export default function HomePage() {
   const [flights, setFlights] = useState<flight[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [query, setQuery] = useState({
     airline: "",
     departure: "",
     arrival: "",
     date: "",
   });
-  const [user, setUser] = useState<User | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +93,11 @@ export default function HomePage() {
     <>
       <Navbar user={user} />
       <div className="pt-52 flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-blue-100 to-blue-300 p-8">
-        <h1 className="text-5xl font-bold text-blue-900 mb-8 text-center">
+        <h1 className="text-5xl font-bold text-blue-900 mb-16 text-center">
+          Welcome {user? "" : "Customer!"}
+        </h1>
+
+        <h1 className="text-5xl font-bold text-blue-500 mb-8 text-center">
           Search for Future Flights
         </h1>
 

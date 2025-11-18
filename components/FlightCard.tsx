@@ -37,11 +37,25 @@ export default function FlightCard({ f }: { f: flight }) {
         <div className="mt-4 space-y-1">
           <p>
             <span className="font-semibold text-gray-500">Departure:</span>{" "}
-            {new Date(f.departure_date_time).toLocaleString()}
+            {new Date(f.departure_date_time).toLocaleString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })}
           </p>
           <p>
             <span className="font-semibold text-gray-500">Arrival:</span>{" "}
-            {new Date(f.arrival_date_time).toLocaleString()}
+            {new Date(f.arrival_date_time).toLocaleString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })}
           </p>
         </div>
 
