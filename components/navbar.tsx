@@ -15,13 +15,22 @@ export default function Navbar({ user }: { user: User | null }) {
           ✈️ AirReserve
         </Link>
 
-        {/* Profile / Sign In */}
-        <Link
-          href={user ? "/profile" : "/login"}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition"
-        >
-          {user ? "Profile" : "Sign In"}
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/staff"
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "Staff" ? "" : "hidden"}`}
+          >
+            Update
+          </Link>
+
+          {/* Profile / Sign In */}
+          <Link
+            href={user ? "/profile" : "/login"}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+          >
+            {user ? "Profile" : "Sign In"}
+          </Link>
+        </div>
       </div>
     </nav>
   );
