@@ -1,8 +1,8 @@
 "use client";
 
-import type { flight } from "./homepage";
+import { Flight } from "@/types";
 
-export default function FlightCard({ f }: { f: flight }) {
+export default function FlightCard({ f }: { f: Flight }) {
   return (
     <div
       key={f.flight_number}

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import type { flight } from "@/components/homepage";
+import { Flight } from "@/types";
 import Link from "next/link";
 
 export default function FlightsPage() {
-  const [flights, setFlights] = useState<flight[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
 
@@ -35,7 +35,7 @@ export default function FlightsPage() {
 
   const handleChange = (
     flight_number: number,
-    field: keyof flight,
+    field: keyof Flight,
     value: string | number
   ) => {
     setFlights((prev) =>
