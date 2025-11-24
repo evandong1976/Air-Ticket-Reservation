@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 function LoginForm() {
@@ -11,17 +11,59 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"User" | "Staff">("User");
 
-  const [error, setError] = useState();
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (role == "User") {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    console.log(email, password)
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    // if there is an error
+    if (authError) {
+      setError(authError.message);
+      console.log(authError.message)
+      return;
     }
+
+    router.push("/");
   };
+
+  const handleStaffSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // 1. Get the email for the given username
+    const { data: staffData, error: staffError } = await supabase
+      .from("airline_staff")
+      .select("email_address")
+      .eq("username", username)
+      .single();
+
+    if (staffError) {
+      console.error("Staff lookup error:", staffError);
+      return;
+    }
+
+    const retrieved_email = staffData.email_address;
+
+    // 2. Sign in using that email
+    const { data: signInData, error: signInError } =
+      await supabase.auth.signInWithPassword({
+        email: retrieved_email,
+        password: password,
+      });
+
+    if (signInError) {
+      console.error("Sign in error:", signInError);
+      return;
+    }
+
+    router.push("/");
+
+  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -72,7 +114,14 @@ function LoginForm() {
           Welcome Back!
         </h2>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            return role === "Staff"
+              ? handleStaffSubmit(e)
+              : handleCustomerSubmit(e);
+          }}
+        >
           {/* Email Group */}
           <div className={`space-y-2 ${role == "User" ? "" : "hidden"}`}>
             <label
@@ -88,7 +137,7 @@ function LoginForm() {
               onChange={(e) => {
                 setEmail(e.target.value);
               }}
-              required
+              required={role == "User"}
               className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
@@ -106,7 +155,7 @@ function LoginForm() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
+              required={role == "Staff"}
               className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
@@ -122,7 +171,7 @@ function LoginForm() {
             <input
               type="password"
               id="password"
-              onChange={() => {}}
+              onChange={(e) => {setPassword(e.target.value);}}
               required
               className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
@@ -135,6 +184,10 @@ function LoginForm() {
           >
             Log In
           </button>
+
+          {error && (
+            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+          )}
 
           {/* Sign Up Link */}
           <p className="text-center text-sm text-gray-600 pt-4">
