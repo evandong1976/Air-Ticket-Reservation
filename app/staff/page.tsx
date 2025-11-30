@@ -45,6 +45,37 @@ export default function FlightsPage() {
     );
   };
 
+  const handleSave = async (flightToSave: Flight) => {
+    setSaving(true);
+    try {
+      // attempt to send update to supabase
+      const { error } = await supabase
+        .from("flight")
+        .update({
+          airline_name: flightToSave.airline_name,
+          airplane_id: flightToSave.airplane_id,
+          base_price: flightToSave.base_price,
+          status: flightToSave.status,
+          departure_airport_code: flightToSave.departure_airport_code,
+          arrival_airport_code: flightToSave.arrival_airport_code,
+          departure_date_time: flightToSave.departure_date_time,
+          arrival_date_time: flightToSave.arrival_date_time,
+        })
+        .eq("flight_number", flightToSave.flight_number); // condition to ensure correct flight is updated
+
+      if (error) throw error; // in case flight update violates database constraints
+
+      alert("Success! Flight #${flightToSave.flight_number} updated.");
+
+    } catch (error) {
+      console.error("Error updating flight:", error);
+      alert("Failed to save changes. Check the console for details.");
+      
+    } finally {
+      setSaving(false);
+    }
+    
+  }
   if (loading) {
     return (
       <p className="text-center text-lg mt-10 animate-pulse text-gray-600">
@@ -211,6 +242,7 @@ export default function FlightsPage() {
                 {/* Save button */}
                 <td className="px-4 py-3 border-b text-center">
                   <button
+                    onClick={() => handleSave(f)}
                     disabled={saving}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-3 py-1 rounded-lg transition shadow-sm"
                   >
