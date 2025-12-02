@@ -120,7 +120,7 @@ export default function FlightsPage() {
 
       if (error) throw error; // in case flight update violates database constraints
 
-      alert("Success! Flight #${flightToSave.flight_number} updated.");
+      alert(`Success! Flight #${flightToSave.flight_number} updated.`);
 
     } catch (error) {
       console.error("Error updating flight:", error);
