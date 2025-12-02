@@ -6,9 +6,22 @@ import { Flight } from "@/types";
 import Link from "next/link";
 
 export default function FlightsPage() {
+  const initialNewFlightState: Flight = {
+    flight_number: 0,
+    base_price: 0,
+    departure_date_time: "",
+    arrival_date_time: "",
+    airplane_id: 0,
+    arrival_airport_code: "",
+    status: "On Time",
+    departure_airport_code: "",
+    airline_name: "",
+};
+
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
+  const [newFlight, setNewFlight] = useState(initialNewFlightState);
 
   // Format: "May 26, 2025, 5:30 PM"
   const formatDate = (iso: string) => {
@@ -33,6 +46,48 @@ export default function FlightsPage() {
     load();
   }, []);
 
+  const handleNewFlightChange = (
+    field: keyof typeof initialNewFlightState, 
+    value: string | number
+    ) => {
+    setNewFlight((prev) => ({ ...prev, [field]: value }));
+};
+
+  const handleNewFlight = async () => {
+    setSaving(true);
+
+    // check if primary key fields are filled
+    if (!newFlight.airline_name || !newFlight.departure_airport_code) {
+      alert("Please enter the airline name and airport codes.");
+      setSaving(false);
+      return;
+    }
+
+    // attempt to send new flight info to supabase
+    try {
+    const { data, error } = await supabase
+      .from("flight")
+      .insert([newFlight])
+      .select(); // Return the data so we can update the UI
+
+    if (error) throw error; // in case insert violates database constraints
+
+    // if successful, update the table without refreshing
+    if (data) {
+      setFlights((prev) => [...data, ...prev]); // add new flight to top of flights list
+      setNewFlight(initialNewFlightState); // clear input fields
+      alert("Flight added successfully!");
+    }
+
+  } catch (error) {
+    console.error("Error adding flight:", error);
+    alert("Failed to add flight. Check console.");
+
+  } finally {
+    setSaving(false);
+  }
+}
+
   const handleChange = (
     flight_number: number,
     field: keyof Flight,
@@ -45,6 +100,37 @@ export default function FlightsPage() {
     );
   };
 
+  const handleSave = async (flightToSave: Flight) => {
+    setSaving(true);
+    try {
+      // attempt to send update to supabase
+      const { error } = await supabase
+        .from("flight")
+        .update({
+          airline_name: flightToSave.airline_name,
+          airplane_id: flightToSave.airplane_id,
+          base_price: flightToSave.base_price,
+          status: flightToSave.status,
+          departure_airport_code: flightToSave.departure_airport_code,
+          arrival_airport_code: flightToSave.arrival_airport_code,
+          departure_date_time: flightToSave.departure_date_time,
+          arrival_date_time: flightToSave.arrival_date_time,
+        })
+        .eq("flight_number", flightToSave.flight_number); // condition to ensure correct flight is updated
+
+      if (error) throw error; // in case flight update violates database constraints
+
+      alert(`Success! Flight #${flightToSave.flight_number} updated.`);
+
+    } catch (error) {
+      console.error("Error updating flight:", error);
+      alert("Failed to save changes. Check the console for details.");
+      
+    } finally {
+      setSaving(false);
+    }
+    
+  }
   if (loading) {
     return (
       <p className="text-center text-lg mt-10 animate-pulse text-gray-600">
@@ -75,6 +161,120 @@ export default function FlightsPage() {
           </thead>
 
           <tbody>
+            {/* Start of Flight Insert Row */}
+            <tr className="border border-green-300 rounded-lg px-2 py-1 w-full">
+              {/* Flight Number Input */}
+              <td className="px-4 py-3">
+                <input
+                  type="number"
+                  placeholder="XXX"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full placeholder-gray-400 placeholder-opacity-100 text-black"
+                  value={newFlight.flight_number || ""}
+                  onChange={(e) => handleNewFlightChange("flight_number", Number(e.target.value))}
+                />
+              </td>
+
+              {/* Airline Input */}
+              <td className="px-4 py-3">
+                <input
+                  placeholder=""
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full placeholder-gray-400 placeholder-opacity-100 text-black"
+                  value={newFlight.airline_name}
+                  onChange={(e) => handleNewFlightChange("airline_name", e.target.value)}
+                />
+              </td>
+
+              {/* Airplane ID Input */}
+              <td className="px-4 py-3">
+                <input
+                  type="number"
+                  placeholder="ID"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full placeholder-gray-600 placeholder-opacity-100 text-black"
+                  value={newFlight.airplane_id || ""}
+                  onChange={(e) => handleNewFlightChange("airplane_id", Number(e.target.value))}
+                />
+              </td>
+
+              {/* Price Input */}
+              <td className="px-4 py-3">
+                <input
+                  type="number"
+                  placeholder="$"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full placeholder-gray-400 placeholder-opacity-100 text-black"
+                  value={newFlight.base_price || ""}
+                  onChange={(e) => handleNewFlightChange("base_price", Number(e.target.value))}
+                />
+              </td>
+
+              {/* Status Dropdown Menu */}
+              <td className="px-4 py-3">
+                <select 
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full text-black"
+                  value={newFlight.status}
+                  onChange={(e) => handleNewFlightChange("status", e.target.value)}
+                >
+                  <option value="On Time">On Time</option>
+                  <option value="Delayed">Delayed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </td>
+
+              {/* Departure Airport */}
+              <td className="px-4 py-3">
+                <input
+                  placeholder="XXX"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full placeholder-gray-400 placeholder-opacity-100 text-black"
+                  maxLength={3}
+                  value={newFlight.departure_airport_code}
+                  onChange={(e) => handleNewFlightChange("departure_airport_code", e.target.value)}
+                />
+              </td>
+
+              {/* Arrival Airport */}
+              <td className="px-4 py-3">
+                <input
+                  placeholder="XXX"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full placeholder-gray-400 placeholder-opacity-100 text-black"
+                  maxLength={3}
+                  value={newFlight.arrival_airport_code}
+                  onChange={(e) => handleNewFlightChange("arrival_airport_code", e.target.value)}
+                />
+              </td>
+
+              {/* Departure Time */}
+              <td className="px-4 py-3">
+                <input
+                  type="datetime-local"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full text-black"
+                  value={newFlight.departure_date_time}
+                  onChange={(e) => handleNewFlightChange("departure_date_time", e.target.value)}
+                />
+              </td>
+
+              {/* Arrival Time */}
+              <td className="px-4 py-3">
+                <input
+                  type="datetime-local"
+                  className="border border-green-300 rounded-lg px-2 py-1 w-full text-black"
+                  value={newFlight.arrival_date_time}
+                  onChange={(e) => handleNewFlightChange("arrival_date_time", e.target.value)}
+                />
+              </td>
+
+              {/* Add New Flight Button */}
+              <td className="px-4 py-3 text-center">
+                <button
+                  onClick={handleNewFlight}
+                  disabled={saving}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded-lg shadow-md font-bold"
+                >
+                  {saving ? "..." : "Add"}
+                </button>
+              </td>
+            </tr>
+            {/* End of Flight Insert Row */}
+
+            {/* Flight List Start */}
             {flights.map((f, idx) => (
               <tr
                 key={f.flight_number}
@@ -131,13 +331,17 @@ export default function FlightsPage() {
 
                 {/* Status */}
                 <td className="px-4 py-3 border-b">
-                  <input
-                    className="border text-black rounded-lg px-2 py-1 w-full"
-                    value={f.status}
-                    onChange={(e) =>
-                      handleChange(f.flight_number, "status", e.target.value)
-                    }
-                  />
+                  <select
+                      className="border text-black rounded-lg px-2 py-1 w-full"
+                      value={f.status}
+                      onChange={(e) =>
+                        handleChange(f.flight_number, "status", e.target.value)
+                      }
+                  >                 
+                    <option value="On Time">On Time</option>
+                    <option value="Delayed">Delayed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
                 </td>
 
                 {/* Depart airport */}
@@ -211,6 +415,7 @@ export default function FlightsPage() {
                 {/* Save button */}
                 <td className="px-4 py-3 border-b text-center">
                   <button
+                    onClick={() => handleSave(f)}
                     disabled={saving}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-3 py-1 rounded-lg transition shadow-sm"
                   >
@@ -219,6 +424,7 @@ export default function FlightsPage() {
                 </td>
               </tr>
             ))}
+            {/* Flight List End */}
           </tbody>
         </table>
       </div>
