@@ -16,3 +16,11 @@ export interface SearchQuery {
     arrival: string;
     date: string;
 }
+
+export interface Airplane {
+    airline: string;
+    airplane_id: number;
+    num_seats: number;
+    manufacturing_company: string;
+    age: number;
+}
