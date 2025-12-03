@@ -28,6 +28,22 @@ function LoginForm() {
       return;
     }
 
+    // check if email entered was in the customer table (and not staff table)
+    if (data.user?.email) {
+      const { data: customerData } = await supabase
+        .from("customer")
+        .select("email")
+        .eq("email", data.user.email)
+        .maybeSingle();
+
+      // if they are not a customer (thus they are staff), sign them out
+      if (!customerData) {
+        await supabase.auth.signOut();
+        setError("Invalid login credentials");
+        return;
+      }
+    }
+    // successful sign-in -> redirect to homepage
     router.push("/");
   };
 
