@@ -107,6 +107,7 @@ export default function AirplanePage() {
         } catch (error) {
             console.error("Error adding airplane:", error);
             alert("Failed to add airplane");
+            router.push("/")
 
         } finally {
             setSaving(false);
@@ -141,15 +142,15 @@ export default function AirplanePage() {
                 </tr>
             </thead>
             {/* End of: Setup column headers and Homepage return buttom */}    
-            
+
             <tbody>
                 {/* Start of Airplane Insert Row */}
                 <tr className="px-4 py-3 border border-black">
                     {/* Airline Name Field (locked to staff's airline) */}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 ">
                         <input
                             type="string"
-                            className="border border-gray-300 bg-gray-200 text-gray-600 rounded-lg px-2 py-1 w-full cursor-not-allowed"
+                            className="border border-gray-300 bg-gray-200 text-gray-600 rounded-lg px-2 py-1 w-full cursor-not-allowed text-center"
                             value={newAirplane.airline_name}
                             disabled
                             readOnly 
@@ -160,7 +161,7 @@ export default function AirplanePage() {
                     <td className="px-4 py-3">
                         <input
                             type="number"
-                            className="border border-black rounded-lg px-2 py-1 w-full text-black"
+                            className="border border-black rounded-lg px-2 py-1 w-full text-black text-center"
                             value = {newAirplane.airplane_id || ""}
                             onChange={(e) => handleNewAirplane("airplane_id", Number(e.target.value))}
                         />
@@ -170,7 +171,7 @@ export default function AirplanePage() {
                     <td className="px-4 py-3">
                         <input
                             type="number"
-                            className="border border-black rounded-lg px-2 py-1 w-full text-black"
+                            className="border border-black rounded-lg px-2 py-1 w-full text-black text-center"
                             value = {newAirplane.num_seats || ""}
                             onChange={(e) => handleNewAirplane("num_seats", Number(e.target.value))}
                         />
@@ -180,7 +181,7 @@ export default function AirplanePage() {
                     <td className="px-4 py-3">
                         <input
                             type="string"
-                            className="border border-black rounded-lg px-2 py-1 w-full text-black"
+                            className="border border-black rounded-lg px-2 py-1 w-full text-black text-center"
                             value = {newAirplane.manufacturing_company || ""}
                             onChange={(e) => handleNewAirplane("manufacturing_company", e.target.value)}
                         />
@@ -190,7 +191,7 @@ export default function AirplanePage() {
                     <td className="px-4 py-3">
                         <input
                             type="number"
-                            className="border border-black rounded-lg px-2 py-1 w-full text-black"
+                            className="border border-black rounded-lg px-2 py-1 w-full text-black text-center"
                             value = {newAirplane.age|| ""}
                             onChange={(e) => handleNewAirplane("age", Number(e.target.value))}
                         />
@@ -207,6 +208,32 @@ export default function AirplanePage() {
                         </button>
                     </td>
                 </tr>
+
+            {/* exsiting airplanes list (updates upon new insert) */}
+            {airplaneList.map((plane) => (
+              <tr
+                key={plane.airplane_id}
+                className="border border-black hover:bg-gray-50 text-black transition-colors text-center"
+              >
+                <td className="px-4 py-3">{plane.airline_name}</td>
+                <td className="px-4 py-3">{plane.airplane_id}</td>
+                <td className="px-4 py-3">{plane.num_seats}</td>
+                <td className="px-4 py-3">{plane.manufacturing_company}</td>
+                <td className="px-4 py-3">{plane.age}</td>
+                <td className="px-4 py-3 text-center font-bold text-green-600 text-xs">
+                  Added
+                </td>
+              </tr>
+            ))}
+            
+            {/* Display message if airline has no airplanes */}
+            {airplaneList.length === 0 && (
+              <tr>
+                <td colSpan={6} className="text-center py-4 text-gray-400 italic">
+                  No airplanes for {staffAirline} found.
+                </td>
+              </tr>
+            )}
             </tbody>
         </table>
         </div>
