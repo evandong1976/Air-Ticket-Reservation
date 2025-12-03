@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function monthlyReport() {
     const router = useRouter();
@@ -98,6 +99,16 @@ export default function monthlyReport() {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Home Button */}
+            <div className="text-2xl py-10 font-bold text-center mb-4">
+                <Link 
+                    href="/" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg shadow-md transition-colors flex items-center gap-2"
+                >
+                    Home
+                </Link>
             </div>
         </div>
     );
