@@ -16,11 +16,28 @@ export default function Navbar({ user }: { user: User | null }) {
         </Link>
 
         <div className="flex gap-3">
+          {/* See Monthly Ticket Report (STAFF ONLY) */}
+          <Link
+            href="/report"
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "Staff" ? "" : "hidden"}`}
+          >
+            View Report
+          </Link>
+
+          {/* Add Airplane (STAFF ONLY) */}
+          <Link
+            href="/airplane"
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "Staff" ? "" : "hidden"}`}
+          >
+            Update Airplanes
+          </Link>
+
+          {/* Flight Add/Update (STAFF ONLY) */}
           <Link
             href="/staff"
             className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "Staff" ? "" : "hidden"}`}
           >
-            Update
+            Update Flight
           </Link>
 
           {/* Profile / Sign In */}
