@@ -1,12 +1,10 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function monthlyReport() {
-    const router = useRouter();
     const [loading, setLoading] = useState(true);
     
     
@@ -27,9 +25,6 @@ export default function monthlyReport() {
                 .select("id, purchase_date_time")
                 .gte("purchase_date_time", oneYearAgo.toISOString())
                 .order("purchase_date_time", { ascending: false }); // newest tickets load first
-                
-                console.log("Data returned:", data); // Check if this is []
-                console.log("Error returned:", error); // Check if this exists
 
             if (data && !error) setTickets(data);
             setLoading(false);
@@ -59,6 +54,7 @@ export default function monthlyReport() {
 
     return (
         <div className="p-10 min-h-screen bg-gray-100 text-gray-800 flex flex-col items-center">
+        {/* Page Title */}
         <h1 className="text-4xl font-bold text-center mb-4">Ticket Report Details</h1>
             {/* Display total tickets in past year */}
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8 w-full max-w-4xl flex justify-between items-center">
