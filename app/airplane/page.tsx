@@ -38,7 +38,7 @@ export default function AirplanePage() {
             }
 
             if (user.email) {
-                const { data, error } = await supabase
+                const { data } = await supabase
                 .from("airline_staff")
                 .select("airline_name") 
                 .eq("email_address", user.email)
