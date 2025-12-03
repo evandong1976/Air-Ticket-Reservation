@@ -18,7 +18,7 @@ export interface SearchQuery {
 }
 
 export interface Airplane {
-    airline: string;
+    airline_name: string;
     airplane_id: number;
     num_seats: number;
     manufacturing_company: string;

@@ -156,7 +156,14 @@ export default function FlightsPage() {
               <th className="px-4 py-3 border-b">Arrive Airport</th>
               <th className="px-4 py-3 border-b">Depart Time</th>
               <th className="px-4 py-3 border-b">Arrive Time</th>
-              <th className="px-4 py-3 border-b"><Link href="/">Home</Link></th>
+              <th className="px-4 py-3 font-bold border-b">
+                <Link 
+                  href="/" 
+                  className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-xs hover:bg-gray-300 transition"
+                >
+                  Home
+                </Link>
+              </th>
             </tr>
           </thead>
 
