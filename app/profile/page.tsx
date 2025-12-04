@@ -21,12 +21,12 @@ interface CustomerProfile {
 
 interface AirlineStaffProfile {
   username: string;
-  password: string | null;
   first_name: string | null;
   last_name: string | null;
   date_of_birth: string | null;
   email_address: string | null;
   airline_name: string | null;
+  phone_number: string | null;
 }
 
 type Profile =
@@ -56,7 +56,7 @@ export default function ProfilePage() {
 
       const email = session.user.email;
 
-      // Try CUSTOMER table
+      // Try loading customer data
       const { data: cust } = await supabase
         .from("customer")
         .select("*")
@@ -69,7 +69,7 @@ export default function ProfilePage() {
         return;
       }
 
-      // Try AIRLINE STAFF table
+      // if loading customer failed, try loading staff data
       const { data: staff } = await supabase
         .from("airline_staff")
         .select("*")
@@ -82,7 +82,7 @@ export default function ProfilePage() {
         return;
       }
 
-      // Not found
+      // else error
       setError("Profile not found.");
       setLoading(false);
     };
@@ -90,9 +90,7 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  // ------------------------------
-  // GENERIC FIELD UPDATER
-  // ------------------------------
+  // generic field updater 
   const updateField = (
     field: keyof CustomerProfile | keyof AirlineStaffProfile,
     value: string | null
@@ -101,9 +99,7 @@ export default function ProfilePage() {
     setProfile({ ...profile, [field]: value });
   };
 
-  // ------------------------------
-  // SAVE PROFILE (handles both roles)
-  // ------------------------------
+  // save profile (handles both roles)
   const handleSave = async () => {
     if (!profile) return;
 
@@ -112,7 +108,7 @@ export default function ProfilePage() {
     setSaving(true);
 
     if (profile.role === "customer") {
-      const { error } = await supabase
+      const { error: customerError } = await supabase
         .from("customer")
         .update({
           name: profile.name,
@@ -128,12 +124,14 @@ export default function ProfilePage() {
         })
         .eq("email", profile.email);
 
-      if (error) setError(error.message);
+      if (customerError) setError(customerError.message);
       else setSuccess("Profile updated successfully.");
     }
 
     if (profile.role === "staff") {
-      const { error } = await supabase
+      let errorFound = false; // need to track because inserting into 2 tables
+
+      const { error: staffError } = await supabase
         .from("airline_staff")
         .update({
           first_name: profile.first_name,
@@ -143,33 +141,47 @@ export default function ProfilePage() {
           date_of_birth: profile.date_of_birth,
         })
         .eq("username", profile.username);
+      
+      if (staffError) {
+        setError(staffError.message);
+        errorFound = true;
+        setSaving(false);
+        return;
+      }
 
-      if (error) setError(error.message);
-      else setSuccess("Staff profile updated successfully.");
+      const { error: phoneError } = await supabase
+        .from("phone_numbers")
+        .insert({
+          username: profile.username,
+          phone_number: profile.phone_number
+        });
+      
+      if (phoneError) {
+        setError(`Phone insert failed: ${phoneError.message}`);
+        errorFound = true;
+      }
+
+      // show success if no errors found when inserting into both tables
+      if (!errorFound) {
+        setSuccess("Profile updated successfully.");
+      }
     }
 
     setSaving(false);
   };
 
-  // ------------------------------
-  // SIGN OUT
-  // ------------------------------
+  // sign out upon clicking sign out button
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login"); // redirects to login page
     router.refresh();      // clears any cached data
   };
 
-  // ------------------------------
-  // UI STATES
-  // ------------------------------
+  // ui states
   if (loading) return <div className="p-6">Loading profile...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!profile) return <div className="p-6">No profile found.</div>;
 
-  // ------------------------------
-  // RENDERING
-  // ------------------------------
+  // profile page rendering
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
@@ -190,7 +202,8 @@ export default function ProfilePage() {
           )}
 
           <div className="space-y-6">
-            {/* ---------------- ACCOUNT SECTION ---------------- */}
+
+            {/* Account Information*/}
             <Section title="Account">
               <Field label={profile.role === "customer" ? "Email" : "Username"}>
                 <input
@@ -245,7 +258,7 @@ export default function ProfilePage() {
               )}
             </Section>
 
-            {/* ---------------- ADDRESS (customers only) ---------------- */}
+            {/* Address (customer only) */}
             {profile.role === "customer" && (
               <>
                 <Section title="Address">
@@ -340,7 +353,7 @@ export default function ProfilePage() {
               </>
             )}
 
-            {/* ---------------- PERSONAL (both roles) ---------------- */}
+            {/* Personal Info Section */}
             <Section title="Personal">
               <Field label="Date of Birth">
                 <input
@@ -354,6 +367,7 @@ export default function ProfilePage() {
               </Field>
 
               {profile.role === "staff" && (
+                <>
                 <Field label="Airline Name">
                   <input
                     className="input"
@@ -363,11 +377,21 @@ export default function ProfilePage() {
                     }
                   />
                 </Field>
+                <Field label="Add Phone Number">
+                  <input
+                    className="input"
+                    value={profile.phone_number || ""}
+                    onChange={(e) =>
+                      updateField("phone_number", e.target.value || null)
+                    }
+                  />
+                </Field>
+                </>
               )}
             </Section>
           </div>
 
-          {/* ---------- Save Button ---------- */}
+          {/* Save Button */}
           <button
             onClick={handleSave}
             disabled={saving}
@@ -376,13 +400,21 @@ export default function ProfilePage() {
             {saving ? "Saving..." : "Save Changes"}
           </button>
 
+          {/* Home Button */}
           <Link
             className="block text-center mt-4 cursor-pointer w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition"
             href="/"
+          >
+            Back to Home
+          </Link>
+
+          {/* Sign Out Button */}
+          <button
+            className="block text-center mt-4 cursor-pointer w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition"
             onClick={handleSignOut}
           >
             Sign Out
-          </Link>
+          </button>
         </div>
       </div>
     </div>

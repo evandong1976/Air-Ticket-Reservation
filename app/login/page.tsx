@@ -58,7 +58,7 @@ function LoginForm() {
       .single();
 
     if (staffError) {
-      console.error("Staff lookup error:", staffError);
+      setError("Invalid login credentials");
       return;
     }
 
@@ -72,7 +72,7 @@ function LoginForm() {
       });
 
     if (signInError) {
-      console.error("Sign in error:", signInError);
+      setError("Invalid login credentials");
       return;
     }
 
