@@ -25,21 +25,21 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
         >
             <input
                 type="text"
-                placeholder="Airline"
+                placeholder="Airline Name"
                 value={query.airline}
                 onChange={(e) => setQuery({ ...query, airline: e.target.value })}
                 className="flex-1 border border-gray-300 rounded-lg px-4 text-black py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             <input
                 type="text"
-                placeholder="Departure"
+                placeholder="Departure Airport Code"
                 value={query.departure}
                 onChange={(e) => setQuery({ ...query, departure: e.target.value })}
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             <input
                 type="text"
-                placeholder="Arrival"
+                placeholder="Arrival Airport Code"
                 value={query.arrival}
                 onChange={(e) => setQuery({ ...query, arrival: e.target.value })}
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-400"

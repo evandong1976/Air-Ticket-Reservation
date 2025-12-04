@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 export default function Navbar({ user }: { user: User | null }) {
@@ -10,12 +9,19 @@ export default function Navbar({ user }: { user: User | null }) {
         {/* Logo */}
         <Link
           href="/"
-          className="text-2xl font-bold text-blue-700 tracking-tight"
+          className="text-2xl font-bold text-blue-700 tracking-tight hover:underline"
         >
           ✈️ AirReserve
         </Link>
 
         <div className="flex gap-3">
+          {/* View Customer Ratings/Comments (STAFF ONLY) */}
+          <Link
+            href="/staff/reviews"
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "Staff" ? "" : "hidden"}`}
+          >
+            View Flight Reviews
+          </Link>
           {/* See Monthly Ticket Report (STAFF ONLY) */}
           <Link
             href="/report"
@@ -38,6 +44,14 @@ export default function Navbar({ user }: { user: User | null }) {
             className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "Staff" ? "" : "hidden"}`}
           >
             Update Flight
+          </Link>
+
+          {/* View My Flights (CUSTOMER ONLY) */}
+          <Link
+            href="/tickets"
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition ${user && user.user_metadata.role == "User" ? "" : "hidden"}`}
+          >
+            My Flights
           </Link>
 
           {/* Profile / Sign In */}
