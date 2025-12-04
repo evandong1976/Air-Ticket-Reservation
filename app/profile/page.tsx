@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
@@ -33,15 +34,14 @@ type Profile =
   | ({ role: "staff" } & AirlineStaffProfile);
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // ------------------------------
-  // LOAD PROFILE (for both roles)
-  // ------------------------------
+  // load profile for both staff/customer
   useEffect(() => {
     const loadProfile = async () => {
       const {
@@ -56,7 +56,7 @@ export default function ProfilePage() {
 
       const email = session.user.email;
 
-      // 1️⃣ Try CUSTOMER table
+      // Try CUSTOMER table
       const { data: cust } = await supabase
         .from("customer")
         .select("*")
@@ -69,7 +69,7 @@ export default function ProfilePage() {
         return;
       }
 
-      // 2️⃣ Try AIRLINE STAFF table
+      // Try AIRLINE STAFF table
       const { data: staff } = await supabase
         .from("airline_staff")
         .select("*")
@@ -82,7 +82,7 @@ export default function ProfilePage() {
         return;
       }
 
-      // 3️⃣ Not found
+      // Not found
       setError("Profile not found.");
       setLoading(false);
     };
@@ -156,6 +156,8 @@ export default function ProfilePage() {
   // ------------------------------
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    router.push("/login"); // redirects to login page
+    router.refresh();      // clears any cached data
   };
 
   // ------------------------------
