@@ -6,6 +6,8 @@ import type { User } from "@supabase/supabase-js";
 import FlightCard from "@/components/FlightCard";
 import SearchForm from "@/components/SearchForm";
 import { useFlights } from "@/hooks/useFlights";
+import { Flight } from "@/types"
+import { useRouter } from "next/navigation";
 
 /**
  * HomePage Component
@@ -20,6 +22,27 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loadingRole, setLoadingRole] = useState(false);
+  const router = useRouter();
+
+  // handle purchase button click
+  const handlePurchaseClick = (flightObj: Flight) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (role !== "customer") {
+      return;
+    }
+
+    router.push(
+      `/tickets/purchase?airline_name=${encodeURIComponent(
+        flightObj.airline_name
+      )}&flight_number=${flightObj.flight_number}&departure=${encodeURIComponent(
+        flightObj.departure_date_time
+      )}`
+    );
+  };
 
   // Effect to check for an active user session
   useEffect(() => {
@@ -60,6 +83,8 @@ export default function HomePage() {
     return "Customer";                   // logged in as customer
   };
 
+
+
   return (
     <>
       <Navbar user={user} />
@@ -78,7 +103,30 @@ export default function HomePage() {
         {/* Display the flights */}
         <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {flights.map((flightObj) => (
-            <FlightCard key={flightObj.flight_number} f={flightObj} />
+            <div key={flightObj.flight_number} className="flex flex-col h-full"> 
+              
+              {/* Flight card to display fight info */}
+              <FlightCard f={flightObj} />
+
+              {/* Purchase button (only visible to non-staff) */}
+              {!user && (
+                <button
+                  onClick={() => handlePurchaseClick(flightObj)}
+                  className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200"
+                >
+                  Log In to Purchase
+                </button>
+              )}
+
+              {role == "customer" && (
+                <button
+                  onClick={() => handlePurchaseClick(flightObj)}
+                  className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-200"
+                >
+                  Purchase Ticket
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>
