@@ -11,10 +11,12 @@ export interface Flight {
 }
 
 export interface SearchQuery {
-    airline: string;
-    departure: string;
-    arrival: string;
-    date: string;
+    airline?: string;
+    departure?: string;
+    arrival?: string;
+    date?: string;
+    startDate?: string;
+    endDate?: string;
 }
 
 export interface Airplane {

@@ -124,7 +124,7 @@ export default function FlightsPage() {
 
     } catch (error) {
       console.error("Error updating flight:", error);
-      alert("Failed to save changes. Check the console for details.");
+      alert("Failed to save changes.");4
       
     } finally {
       setSaving(false);
