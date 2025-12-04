@@ -179,7 +179,14 @@ export default function ProfilePage() {
 
   // ui states
   if (loading) return <div className="p-6">Loading profile...</div>;
-  if (!profile) return <div className="p-6">No profile found.</div>;
+  if (!profile) return (
+        <div className="p-6"> No profile found           
+          <button
+            className="block text-center mt-4 cursor-pointer w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition"
+            onClick={handleSignOut}
+          >
+            Return to Login
+          </button> </div>);
 
   // profile page rendering
   return (
