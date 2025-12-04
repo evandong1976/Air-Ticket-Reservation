@@ -17,8 +17,12 @@ function SignUpForm() {
   const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // supabase auth schema automatically sets to lowercase
+    // do this to prevent RLS policy mismatches
+    const cleanEmail = email.toLowerCase(); 
+
     const { data, error: authError } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail,
       password,
       options: {
         data: {
@@ -37,9 +41,15 @@ function SignUpForm() {
     if (data.user) {
       const { data, error: insertError} = await supabase
         .from("customer")
-        // PASSWORD IS NOT HASHED
-        .insert({ email: email, password: password });
+        .insert({email: cleanEmail});
+
+       if (insertError) {
+        setError(insertError.message);
+        return;
+       }
     }
+
+  
 
     router.push("/");
   };
@@ -48,8 +58,12 @@ function SignUpForm() {
   const handleStaffSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // supabase auth schema automatically sets to lowercase
+    // do this to prevent RLS policy mismatches
+    const cleanEmail = email.toLowerCase(); 
+
     const { data, error: authError } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail,
       password,
       options: {
         data: {
@@ -70,8 +84,7 @@ function SignUpForm() {
         .from("airline_staff")
         .insert({
           username: username,
-          email_address: email,
-          password: password,
+          email_address: cleanEmail,
         });
 
       if (insertError) {
