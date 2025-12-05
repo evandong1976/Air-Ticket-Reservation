@@ -10,7 +10,9 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
         airline: "",
         departure: "",
         arrival: "",
-        date: "",
+        startDate: "",
+        endDate: "",
+        roundTrip: false,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -18,38 +20,79 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
         onSearch(query);
     };
 
+    // logic to determine if the checkbox should be clickable
+    const isRoundTripAllowed = query.departure !== "" && query.arrival !== "";
+
+    // auto-uncheck roundtrip if an arrival or departure field is cleared
+    const handleLocationChange = (field: 'departure' | 'arrival', value: string) => {
+        setQuery((prev) => {
+            const newState = { ...prev, [field]: value };
+            
+            // if either field is empty, force roundTrip to false
+            if (!newState.departure || !newState.arrival) {
+                newState.roundTrip = false;
+            }
+            return newState;
+        });
+    };
     return (
         <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-2xl shadow-xl p-8 flex flex-col text-black md:flex-row gap-4 w-full max-w-6xl"
-        >
+            className="bg-white rounded-2xl shadow-xl p-8 flex flex-col text-black xl:flex-row flex-wrap gap-4 w-full max-w-6xl items-center"
+        >   
+            {/* Airline Name Field*/}
             <input
                 type="text"
                 placeholder="Airline Name"
                 value={query.airline}
                 onChange={(e) => setQuery({ ...query, airline: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-lg px-4 text-black py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1 border border-gray-300 rounded-lg px-3 text-black py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
+            {/* Departure Airport Code Field*/}
             <input
                 type="text"
-                placeholder="Departure Airport Code"
+                placeholder="Departure Code"
                 value={query.departure}
                 onChange={(e) => setQuery({ ...query, departure: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
+            {/* Arrival Airport Code Field*/}
             <input
                 type="text"
-                placeholder="Arrival Airport Code"
+                placeholder="Arrival Code"
                 value={query.arrival}
                 onChange={(e) => setQuery({ ...query, arrival: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
+            {/* Departure Date and Time Field*/}
             <input
                 type="date"
-                value={query.date}
-                onChange={(e) => setQuery({ ...query, date: e.target.value })}
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none text-black focus:ring-2 focus:ring-blue-400"
+                value={query.startDate}
+                onChange={(e) => setQuery({ ...query, startDate: e.target.value })}
+                className="border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none text-black focus:ring-2 focus:ring-blue-400"
             />
+            {/* Arrival Date and Time Field*/}
+            <input
+                type="date"
+                value={query.endDate}
+                onChange={(e) => setQuery({ ...query, endDate: e.target.value })}
+                className="border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none text-black focus:ring-2 focus:ring-blue-400"
+            />
+            {/* Roundtrip Checkbox */}
+            <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+                <input
+                    type="checkbox"
+                    checked={query.roundTrip && isRoundTripAllowed}
+                    // disable the input if arrival and departure are not both filled
+                    disabled={!isRoundTripAllowed}
+                    onChange={(e) => setQuery({ ...query, roundTrip: e.target.checked })}
+                    className={`w-4 h-4 rounded border-gray-300 focus:ring-blue-500 ${
+                        !isRoundTripAllowed ? "bg-gray-100" : "text-blue-600"
+                    }`}
+                />
+                <span className="font-medium text-sm text-gray-700">Roundtrip</span>
+            </label>
+            {/* Submit Button */}
             <button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 cursor-pointer rounded-lg font-semibold transition"
