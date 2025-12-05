@@ -19,6 +19,9 @@ export default function StaffReviewsPage() {
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [flightAverages, setFlightAverages] = useState<
+  { flight_number: string | number; avg_rating: string }[]>([]);
+
 
   useEffect(() => {
     const init = async () => {
@@ -72,6 +75,22 @@ export default function StaffReviewsPage() {
         return;
       }
 
+      // Compute average rating per flight
+      const grouped = (reviewData ?? []).reduce((acc: any, r: ReviewRow) => {
+        if (!acc[r.flight_number]) {
+          acc[r.flight_number] = { total: 0, count: 0 };
+        }
+        acc[r.flight_number].total += r.rating;
+        acc[r.flight_number].count += 1;
+        return acc;
+      }, {});
+
+      const averages = Object.entries(grouped).map(([flight, info]: any) => ({
+        flight_number: flight,
+        avg_rating: (info.total / info.count).toFixed(1),
+      }));
+
+      setFlightAverages(averages);
       setReviews((reviewData ?? []) as ReviewRow[]);
       setLoading(false);
     };
@@ -130,6 +149,33 @@ export default function StaffReviewsPage() {
                     <td className="px-3 py-2 max-w-md wrap-break-word">
                       {r.comment ?? ""}
                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <br></br>
+
+        <h1 className="text-3xl font-bold text-blue-800 mb-6 text-center">
+          Average Reviews for Flights
+        </h1>
+
+        {!loading && !pageError && reviews.length > 0 && (
+          <div className="bg-white rounded-xl shadow p-4 overflow-x-auto">
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-slate-100">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">Flight #</th>
+                  <th className="px-3 py-2 font-semibold">Average Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                {flightAverages.map((f, idx) => (
+                  <tr key={`${f.flight_number}-${idx}`} className="border-t">
+                    <td className="px-3 py-2">{f.flight_number}</td>
+                    <td className="px-3 py-2">{f.avg_rating}</td>
                   </tr>
                 ))}
               </tbody>
