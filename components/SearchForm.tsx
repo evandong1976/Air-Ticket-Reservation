@@ -20,6 +20,21 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
         onSearch(query);
     };
 
+    // logic to determine if the checkbox should be clickable
+    const isRoundTripAllowed = query.departure !== "" && query.arrival !== "";
+
+    // auto-uncheck roundtrip if an arrival or departure field is cleared
+    const handleLocationChange = (field: 'departure' | 'arrival', value: string) => {
+        setQuery((prev) => {
+            const newState = { ...prev, [field]: value };
+            
+            // if either field is empty, force roundTrip to false
+            if (!newState.departure || !newState.arrival) {
+                newState.roundTrip = false;
+            }
+            return newState;
+        });
+    };
     return (
         <form
             onSubmit={handleSubmit}
@@ -67,9 +82,13 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
             <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
                 <input
                     type="checkbox"
-                    checked={query.roundTrip}
+                    checked={query.roundTrip && isRoundTripAllowed}
+                    // disable the input if arrival and departure are not both filled
+                    disabled={!isRoundTripAllowed}
                     onChange={(e) => setQuery({ ...query, roundTrip: e.target.checked })}
-                    className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    className={`w-4 h-4 rounded border-gray-300 focus:ring-blue-500 ${
+                        !isRoundTripAllowed ? "bg-gray-100" : "text-blue-600"
+                    }`}
                 />
                 <span className="font-medium text-sm text-gray-700">Roundtrip</span>
             </label>

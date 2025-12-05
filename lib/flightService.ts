@@ -14,24 +14,22 @@ export const fetchFlights = async (query?: SearchQuery): Promise<Flight[]> => {
             queryBuilder = queryBuilder.ilike("airline_name", `%${query.airline}%`)
         }
 
-        if (query.departure && query.arrival) {
+        // if both departure and airport code are filled 
+        if (query.arrival && query.departure) {
             // roundtrip filtering (considers paths from airport A->B and B->A)
             if (query.roundTrip) {
                 queryBuilder = queryBuilder.or(
                     // flights from airport A->B
-                    `and(departure_airport_code.ilike.%${query.departure}%,
-                         arrival_airport_code.ilike.%${query.arrival}%),`
-                    +
+                    `and(departure_airport_code.ilike.%${query.departure}%,arrival_airport_code.ilike.%${query.arrival}%),` +
                     // flights from airport B->A
-                    `and(departure_airport_code.ilike.%${query.arrival}%,
-                         arrival_airport_code.ilike.%${query.departure}%)`
+                    `and(departure_airport_code.ilike.%${query.arrival}%, arrival_airport_code.ilike.%${query.departure}%)`
                 );
             // once way filtering (considers paths from airport A->B only)
             } else {
                 queryBuilder = queryBuilder.ilike("departure_airport_code",`%${query.departure}%`);
                 queryBuilder = queryBuilder.ilike("arrival_airport_code", `%${query.arrival}%`);
             }
-        }
+        } 
 
         // date range start
         if (query.startDate) {
