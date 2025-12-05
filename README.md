@@ -3,7 +3,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Contributors: tsm6956, jj4216, ed2738
 
 ## Getting Started
-First run dependencies by running:
+First clone the repository by running:
+
+```bash
+git clone https://github.com/evandong1976/Air-Ticket-Reservation
+cd Air-Ticket-Reservation
+```
+
+Then run dependencies by running:
 ```bash
 npm install
 ```
@@ -17,6 +24,9 @@ followed by:
 ```bash
 npm install again
 ```
+
+Then create a file .env.local in the air-ticket-reservation folder.
+Inside .env.local, paste in the contents from 'env.local contents.pdf'
 
 Then, run the development server:
 ```bash
