@@ -22,7 +22,7 @@ rm -rf node_modules
 
 followed by:
 ```bash
-npm install again
+npm install
 ```
 
 Then create a file .env.local in the air-ticket-reservation folder.
