@@ -14,9 +14,9 @@ export interface SearchQuery {
     airline?: string;
     departure?: string;
     arrival?: string;
-    date?: string;
     startDate?: string;
     endDate?: string;
+    roundTrip?: boolean;
 }
 
 export interface Airplane {
